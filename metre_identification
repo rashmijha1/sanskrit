@@ -1,0 +1,86 @@
+vowels = [u'\N{DEVANAGARI LETTER AA}', u'\N{DEVANAGARI LETTER UU}',
+          u'\N{DEVANAGARI LETTER II}', u'\N{DEVANAGARI LETTER O}',
+          u'\N{DEVANAGARI LETTER E}', u'\N{DEVANAGARI LETTER AI}', 
+          u'\N{DEVANAGARI LETTER AU}']
+
+matras = [' ा', u'\N{DEVANAGARI VOWEL SIGN I}', ' ी', '◌ु', '◌ू', '◌ृ', '◌ॄ', '◌ॅ', '◌ॆ', '◌े', '◌ै', ' ॉ', 'ॊ', 'ो', 'ौ' ]
+
+long_matras = [u'\N{DEVANAGARI VOWEL SIGN AA}', u'\N{DEVANAGARI VOWEL SIGN E}', 
+               u'\N{DEVANAGARI VOWEL SIGN UU}', u'\N{DEVANAGARI VOWEL SIGN II}', 
+               u'\N{DEVANAGARI VOWEL SIGN O}', u'\N{DEVANAGARI VOWEL SIGN AU}',
+               u'\N{DEVANAGARI VOWEL SIGN AI}',
+               'ी', '◌ू', '◌ॄ', '◌ॅ', '◌ॆ', '◌े', '◌ै', ' ॉ', 'ॊ', 'ो', 'ौ' ]
+
+guru_signs = [u'\N{DEVANAGARI SIGN ANUSVARA}', u'\N{DEVANAGARI SIGN VISARGA}']
+virama = u'\N{DEVANAGARI SIGN VIRAMA}'
+ra = u'\N{DEVANAGARI LETTER RA}' 
+
+
+# TAKE IN USER INPUT - DEVANAGARI
+
+raw_input = input("enter the text: ")
+
+# TEXT CLEANING - remove whitespace and line breaks
+
+def cleaning(string): 
+    string = string.replace("ऽ", "")
+    string = string.replace(" ", "") 
+    return string.split('।')
+
+cleaned_txt = cleaning(raw_input)
+
+# BREAK APART TEXT INTO SYLLABLES
+import unicodedata
+
+def splitclusters(s):
+    cluster = u''
+    last = None
+    virama_found = False
+    for c in range(len(s)):
+        cat = unicodedata.category(s[c])[0]
+        if s[c] == '॥':
+          pass
+        elif len(cluster) <= 1 and s[c] == virama:
+          cluster += s[c]
+          virama_found = True
+        elif virama_found:
+          cluster += s[c]
+          virama_found = False
+          if ((c < len(s) -1 and s[c+1] not in matras) and (c < len(s) -2 and s[c+2] != virama)):
+                yield cluster
+                cluster = u''
+        elif c < len(s) -1 and s[c+1] == virama:
+          cluster += s[c]
+          virama_found = True
+        elif s[c] in matras or cat == 'M' or cat == 'L' and last == virama :
+            cluster += s[c]
+        else:
+            if cluster:
+                yield cluster
+            cluster = s[c]
+        last = s[c]
+    if cluster:
+        yield cluster
+
+met_string = ""
+for string in cleaned_txt:
+  syl_list = list(splitclusters(string))
+  while ('।' in syl_list):
+    syl_list.remove('।')
+  print(syl_list)
+  for i in range(len(syl_list)):
+    guru = False
+    for c in range(len(syl_list[i])):
+      if syl_list[i][c] in vowels or syl_list[i][c] in long_matras or syl_list[i][c] in guru_signs or i == len(syl_list)-1 or (c == len(syl_list[i]) -1 and syl_list[i][c] == virama):
+        guru = True
+    if guru:
+      print (syl_list[i] + " guru")
+      met_string += "G"
+    else:
+      print (syl_list[i] + " laghu")
+      met_string += "L"
+
+# OUTPUT RESULTS 
+
+print (met_string)
+print ("num of syllables: ", len(met_string))
