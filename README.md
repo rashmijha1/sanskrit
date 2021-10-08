@@ -1,4 +1,4 @@
-# sanskrit
+# sanskrit transliteration engine
 
 Transcoder:
 Python notebook program that transcodes text from IAST to Devanagari.
